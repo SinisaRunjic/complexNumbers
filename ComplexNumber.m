@@ -1,39 +1,39 @@
 classdef ComplexNumber
     properties
-        xValue
-        yValue
+        realValue
+        imaginaryValue
     end
     properties (Dependent)
         modulus
-        argument %% in rad
+        argument %% in rad it goes from [-pi/2, pi/2)
     end
     methods
-        function cmpxNum = ComplexNumber(realPart,imaginaryPart)
+        function cmpxNum = ComplexNumber(realValue,imaginarimaginaryValue)
             %% constructor
             if(nargin == 1)
                 error('Input one more input argument')
             end
             if(nargin>0)
-                assert(isnumeric(realPart) && isnumeric(imaginaryPart), 'one of your inputs aren''t numeric');
-                assert(~iscell(realPart) && ~iscell(imaginaryPart) ,'input value can''t be a cell')
-                [roX, columnX] = size(realPart);
-                [roY, columnY] = size(imaginaryPart);
+                assert(isnumeric(realValue) && isnumeric(imaginarimaginaryValue), 'one of your inputs aren''t numeric');
+                assert(~iscell(realValue) || ~iscell(imaginarimaginaryValue) ,'input value can''t be a cell')
+                [roX, columnX] = size(realValue);
+                [roY, columnY] = size(imaginarimaginaryValue);
                 assert(roY == 1 && columnX == 1 && roX == 1 && columnY == 1, 'input value can''t be marix')
-                cmpxNum.xValue = realPart;
-                cmpxNum.yValue = imaginaryPart;
+                cmpxNum.realValue = realValue;
+                cmpxNum.imaginaryValue = imaginarimaginaryValue;
             end
         end
         function modulus = get.modulus(cmpxNum)
-            modulus = sqrt(cmpxNum.xValue*cmpxNum.xValue + cmpxNum.yValue*cmpxNum.yValue);
+            modulus = sqrt(cmpxNum.realValue*cmpxNum.realValue + cmpxNum.imaginaryValue*cmpxNum.imaginaryValue);
         end
         function cmpxNum = set.modulus(cmpxNum,~)
-            error('You cannot set Modulus property');
+            error('You cannot set modulus property');
         end
         function argument = get.argument(cmpxNum)
-            argument = atan2(cmpxNum.yValue,cmpxNum.xValue);
+            argument = atan2(cmpxNum.imaginaryValue,cmpxNum.realValue);
         end
         function cmpxNum = set.argument(cmpxNum,~)
-            error('You can''t set Argument property');
+            error('You can''t set argument property');
         end
         function [modulus,argument] = getPolarCoordinates(cmpxNum)
             modulus = cmpxNum.modulus;
@@ -41,30 +41,33 @@ classdef ComplexNumber
         end
     end
     methods
-        %% function overload
+        %% function overload operators
         function cmpxNum = plus(cmpxNum1,cmpxNum2)
             %% cmpxNum1 + cmpxNum2
-            cmpxNum.xValue = cmpxNum1.xValue + cmpxNum2.xValue;
-            cmpxNum.yValue = cmpxNum1.yValue + cmpxNum2.yValue;
+            cmpxNum = ComplexNumber;
+            cmpxNum.realValue = cmpxNum1.realValue + cmpxNum2.realValue;
+            cmpxNum.imaginaryValue = cmpxNum1.imaginaryValue + cmpxNum2.imaginaryValue;
         end
         function cmpxNum = minus(cmpxNum1,cmpxNum2)
             %% cmpxNum1 - cmpxNum2
-            cmpxNum.xValue = cmpxNum1.xValue - cmpxNum2.xValue;
-            cmpxNum.yValue = cmpxNum1.yValue - cmpxNum2.yValue;
+            cmpxNum = ComplexNumber;
+            cmpxNum.realValue = cmpxNum1.realValue - cmpxNum2.realValue;
+            cmpxNum.imaginaryValue = cmpxNum1.imaginaryValue - cmpxNum2.imaginaryValue;
         end
         function cmpxNum = times(cmpxNum1,cmpxNum2)
             %% cmpxNum1 .* cmpxNum2
-            cmpxNum.xValue = cmpxNum1.xValue*cmpxNum2.xValue - cmpxNum1.yValue*cmpxNum2.yValue;
-            cmpxNum.yValue = cmpxNum1.xValue*cmpxNum2.yValue + cmpxNum1.xValue*cmpxNum2.yValue;
+            cmpxNum = ComplexNumber;
+            cmpxNum.realValue = cmpxNum1.realValue*cmpxNum2.realValue - cmpxNum1.imaginaryValue*cmpxNum2.imaginaryValue;
+            cmpxNum.imaginaryValue = cmpxNum1.realValue*cmpxNum2.imaginaryValue + cmpxNum1.realValue*cmpxNum2.imaginaryValue;
         end
         function cmpxNum = uminus(cmpxNum)
             %% -cmpxNum
-            cmpxNum.xValue = -cmpxNum.xValue;
-            cmpxNum.yValue = -cmpxNum.yValue;
+            cmpxNum.realValue = -cmpxNum.realValue;
+            cmpxNum.imaginaryValue = -cmpxNum.imaginaryValue;
         end
         function cmpxNum = ctranspose(cmpxNum)
             %% cmpxNum'
-            cmpxNum.yValue = -cmpxNum.yValue;
+            cmpxNum.imaginaryValue = -cmpxNum.imaginaryValue;
         end
     end
 end
