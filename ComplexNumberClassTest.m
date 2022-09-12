@@ -8,6 +8,12 @@ classdef ComplexNumberClassTest < matlab.unittest.TestCase
             'complexNumber4',struct('realPart',-3,'imaginaryPart',-3,'modulus',3*sqrt(2),'argument',-3*pi/4));
         complexNumbersDividend = struct('complexNumbersDividend1',struct('realPart',5,'imaginaryPart',sqrt(2)));
         complexNumbersDivisor = struct('complexNumbersDivisor1',struct('realPart',1,'imaginaryPart',-sqrt(2)));
+        complexNumberForLogical1 = struct('complexNumber1',struct('realPart',3,'imaginaryPart',3,'modulus',3*sqrt(2),'argument',pi/4),...
+            'complexNumber2',struct('realPart',3,'imaginaryPart',-3,'modulus',3*sqrt(2),'argument',-pi/4))
+        complexNumberForLogical2 = struct('complexNumber1',struct('realPart',3,'imaginaryPart',3),...
+            'complexNumber2',struct('realPart',-3,'imaginaryPart',-3))
+        resultOfEq = struct('resultOfEq1', true,'resultofEq', false);
+        resultOfNe = struct('resultOfNe1', false,'resultofEq', true);
         %% variables design or verify errors
         complexNumberRealPartComplexNumber = struct('complexNumber1',struct('realPart',3+3i,'imaginaryPart',3));
         complexNumberImaginaryPartComplexNumber = struct('complexNumber1',struct('realPart',3,'imaginaryPart',3+3i));
@@ -48,9 +54,14 @@ classdef ComplexNumberClassTest < matlab.unittest.TestCase
             verifyLessThan(testCase,abs(actualSolution - expectedSolution),testCase.calculationError, 'Modulus is wrong');
         end
         function testArgument(testCase, complexNumber)
-            actualSoltion = ComplexNumber(complexNumber.realPart, complexNumber.imaginaryPart).argument;
+            actualSolution = ComplexNumber(complexNumber.realPart, complexNumber.imaginaryPart).argument;
             expectedSolution = complexNumber.argument;
-            verifyLessThan(testCase,abs(actualSoltion - expectedSolution),testCase.calculationError, 'Argument is wrong');
+            verifyLessThan(testCase,abs(actualSolution - expectedSolution),testCase.calculationError, 'Argument is wrong');
+        end
+        function testInverse(testCase, complexNumber)
+            actualSolution = ComplexNumber(complexNumber.realPart, complexNumber.imaginaryPart).inverse();
+            expectedSolution = 1./(complexNumber.realPart + complexNumber.imaginaryPart*1i);
+            verifyLessThan(testCase,max(abs([actualSolution.realValue - real(expectedSolution), actualSolution.imaginaryValue - imag(expectedSolution)])),testCase.calculationError, 'Inverse is wrong');
         end
         %% tests for OVERORD OPERATORS
         function testPlus(testCase, complexNumber)
@@ -89,6 +100,19 @@ classdef ComplexNumberClassTest < matlab.unittest.TestCase
             actualSolution = ComplexNumber(complexNumber.realPart,complexNumber.imaginaryPart)';
             expectedSoltion = (complexNumber.realPart - complexNumber.imaginaryPart*1i);
             verifyLessThan(testCase,max(abs([actualSolution.realValue - real(expectedSoltion), actualSolution.imaginaryValue - imag(expectedSoltion)])),testCase.calculationError, 'Overload operator a'' (ctranspose) is wrong');
+        end
+        function testEq(testCase, complexNumberForLogical1, complexNumberForLogical2, resultOfEq)
+            actualSolution = ComplexNumber(complexNumberForLogical1.realPart,complexNumberForLogical1.imaginaryPart) == ...
+                ComplexNumber(complexNumberForLogical2.realPart,complexNumberForLogical2.imaginaryPart) ;
+            expectedSoltion = resultOfEq;
+            verifyEqual(testCase,actualSolution, expectedSoltion,'Overload operator == (eq) is wrong');
+        end
+        
+        function testNe(testCase, complexNumberForLogical1, complexNumberForLogical2, resultOfNe)
+            actualSolution = ComplexNumber(complexNumberForLogical1.realPart,complexNumberForLogical1.imaginaryPart) ~= ...
+                ComplexNumber(complexNumberForLogical2.realPart,complexNumberForLogical2.imaginaryPart) ;
+            expectedSoltion = resultOfNe;
+            verifyEqual(testCase,actualSolution, expectedSoltion,'Overload operator ~= (eq) is wrong');
         end
     end
     %% test for errors
