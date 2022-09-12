@@ -8,6 +8,7 @@ classdef ComplexNumberClassTest < matlab.unittest.TestCase
             'complexNumber4',struct('realPart',-3,'imaginaryPart',-3,'modulus',3*sqrt(2),'argument',-3*pi/4));
         complexNumbersDividend = struct('complexNumbersDividend1',struct('realPart',5,'imaginaryPart',sqrt(2)));
         complexNumbersDivisor = struct('complexNumbersDivisor1',struct('realPart',1,'imaginaryPart',-sqrt(2)));
+        power = struct('Power1',2,'Power2',3,'Power3',-2);
         complexNumberForLogical1 = struct('complexNumber1',struct('realPart',3,'imaginaryPart',3,'modulus',3*sqrt(2),'argument',pi/4),...
             'complexNumber2',struct('realPart',3,'imaginaryPart',-3,'modulus',3*sqrt(2),'argument',-pi/4))
         complexNumberForLogical2 = struct('complexNumber1',struct('realPart',3,'imaginaryPart',3),...
@@ -15,6 +16,7 @@ classdef ComplexNumberClassTest < matlab.unittest.TestCase
         resultOfEq = struct('resultOfEq1', true,'resultofEq', false);
         resultOfNe = struct('resultOfNe1', false,'resultofEq', true);
         %% variables design or verify errors
+        nonRealPower = struct('nonRealPower1','2','nonRealPower2',{{3}},'nonRealPower3',[-2 3],'nonRealPower4',['2' 2]);
         complexNumberRealPartComplexNumber = struct('complexNumber1',struct('realPart',3+3i,'imaginaryPart',3));
         complexNumberImaginaryPartComplexNumber = struct('complexNumber1',struct('realPart',3,'imaginaryPart',3+3i));
         complexNumberRealPartVector = struct('complexNumber1',struct('realPart',[3,3],'imaginaryPart',3));
@@ -115,6 +117,13 @@ classdef ComplexNumberClassTest < matlab.unittest.TestCase
             verifyEqual(testCase,actualSolution, expectedSoltion,'Overload operator ~= (eq) is wrong');
         end
     end
+    methods(Test, ParameterCombination = 'pairwise')
+        function testPower(testCase, complexNumber, power )
+            actualSolution = ComplexNumber(complexNumber.realPart,complexNumber.imaginaryPart).^(power);
+            expectedSoltion = (complexNumber.realPart + complexNumber.imaginaryPart*1i).^(power);
+            verifyLessThan(testCase,max(abs([actualSolution.realValue - real(expectedSoltion), actualSolution.imaginaryValue - imag(expectedSoltion)])),testCase.calculationError, 'Overload operator ./ (rdivide) is wrong');
+        end
+    end
     %% test for errors
     methods (Test)
         function testComplexNumberRealPartComplexNumber(testCase, complexNumberRealPartComplexNumber)
@@ -146,6 +155,11 @@ classdef ComplexNumberClassTest < matlab.unittest.TestCase
         end
         function testComplexNumberImaginaryPartString(testCase, complexNumberImaginaryPartString)
             verifyError(testCase,@() ComplexNumber(complexNumberImaginaryPartString.realPart,complexNumberImaginaryPartString.imaginaryPart),?MException, 'Can''t have complex number if imaginary value is string')
+        end
+    end
+    methods (Test, ParameterCombination = 'sequential')
+        function testNonRealPower(testCase, complexNumber, nonRealPower )
+            verifyError(testCase,@() ComplexNumber(complexNumber.realPart,complexNumber.imaginaryPart).^(nonRealPower),?MException, 'Can''t have complex number on power that isn''t real');
         end
     end
 end

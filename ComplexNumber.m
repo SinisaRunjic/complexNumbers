@@ -16,10 +16,10 @@ classdef ComplexNumber
             if(nargin>0)
                 assert(isnumeric(realValue) && isnumeric(imaginarimaginaryValue), 'one of your inputs aren''t numeric');
                 assert(~iscell(realValue) || ~iscell(imaginarimaginaryValue) ,'input value can''t be a cell')
-                assert(imag(realValue) == 0 && imag(imaginarimaginaryValue) == 0, 'At least one of your input is complex number');
                 [roX, columnX] = size(realValue);
                 [roY, columnY] = size(imaginarimaginaryValue);
                 assert(roY == 1 && columnX == 1 && roX == 1 && columnY == 1, 'input value can''t be marix')
+                assert(imag(realValue) == 0 && imag(imaginarimaginaryValue) == 0, 'At least one of your input is complex number');
                 cmpxNum.realValue = realValue;
                 cmpxNum.imaginaryValue = imaginarimaginaryValue;
             end
@@ -38,7 +38,7 @@ classdef ComplexNumber
         end
         function [modulus,argument] = getPolarCoordinates(cmpxNum)
             modulus = cmpxNum.modulus;
-            argument =  cmpxNum.argument;
+            argument = cmpxNum.argument;
         end
         function cmpxNum = inverse(cmpxNum1)
             cmpxNum = ComplexNumber(1,0)./cmpxNum1;
@@ -76,6 +76,18 @@ classdef ComplexNumber
         %% cmpxNum1 .\ cmpxNum2
         function cmpxNum = ldivide(cmpxNum1, cmpxNum2)
             cmpxNum = rdivide(cmpxNum2,cmpxNum1); %%cmpxNum = cmpxNum2./cmpxNum1;
+        end
+        %% 	power(a,b)
+        function cmpxNum = power(cmpxNum, realNumber)
+            assert(isnumeric(realNumber), 'Inputs aren''t numeric');
+            assert(~iscell(realNumber) ,'Input value can''t be a cell')
+            [roX, columnX] = size(realNumber);
+            assert(roX == 1 && columnX == 1, 'Input value can''t be marix')
+            assert(imag(realNumber) == 0, 'One of your input is complex number');
+            mod = cmpxNum.modulus .^ realNumber;
+            arg = cmpxNum.argument .* realNumber;
+            cmpxNum.realValue = mod * cos(arg);
+            cmpxNum.imaginaryValue = mod  * sin(arg);
         end
         %% -cmpxNum
         function cmpxNum = uminus(cmpxNum)
