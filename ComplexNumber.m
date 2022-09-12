@@ -16,6 +16,7 @@ classdef ComplexNumber
             if(nargin>0)
                 assert(isnumeric(realValue) && isnumeric(imaginarimaginaryValue), 'one of your inputs aren''t numeric');
                 assert(~iscell(realValue) || ~iscell(imaginarimaginaryValue) ,'input value can''t be a cell')
+                assert(real(realValue) == 0 && imag(imaginarimaginaryValue)==0, 'one of your inputs aren''t numeric');
                 [roX, columnX] = size(realValue);
                 [roY, columnY] = size(imaginarimaginaryValue);
                 assert(roY == 1 && columnX == 1 && roX == 1 && columnY == 1, 'input value can''t be marix')
@@ -59,6 +60,19 @@ classdef ComplexNumber
             cmpxNum = ComplexNumber;
             cmpxNum.realValue = cmpxNum1.realValue*cmpxNum2.realValue - cmpxNum1.imaginaryValue*cmpxNum2.imaginaryValue;
             cmpxNum.imaginaryValue = cmpxNum1.realValue*cmpxNum2.imaginaryValue + cmpxNum1.realValue*cmpxNum2.imaginaryValue;
+        end
+        function cmpxNum = rdivide(cmpxNum1, cmpxNum2)
+            %% cmpxNum1 ./ cmpxNum2
+            cmpxNum = ComplexNumber;
+            divisor = cmpxNum2.realValue * cmpxNum2.realValue + cmpxNum2.imaginaryValue * cmpxNum2.imaginaryValue;
+            assert(divisor >0, 'Can''t devide if secound input have real and imaginary value 0 ')
+            cmpxNum.realValue = (cmpxNum1.realValue*cmpxNum2.realValue + cmpxNum1.imaginaryValue * cmpxNum2.imaginaryValue)/divisor;
+            cmpxNum.imaginaryValue = (cmpxNum1.imaginaryValue*cmpxNum2.realValue - cmpxNum1.realValue * cmpxNum2.imaginaryValue)/divisor;
+            
+        end
+        function cmpxNum = ldivide(cmpxNum1, cmpxNum2)
+            %% cmpxNum1 .\ cmpxNum2
+            cmpxNum = rdivide(cmpxNum2,cmpxNum1);
         end
         function cmpxNum = uminus(cmpxNum)
             %% -cmpxNum

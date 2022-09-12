@@ -6,7 +6,11 @@ classdef ComplexNumberClassTest < matlab.unittest.TestCase
             'complexNumber2',struct('realPart',3,'imaginaryPart',-3,'modulus',3*sqrt(2),'argument',-pi/4),...
             'complexNumber3',struct('realPart',-3,'imaginaryPart',3,'modulus',3*sqrt(2),'argument',3*pi/4),...
             'complexNumber4',struct('realPart',-3,'imaginaryPart',-3,'modulus',3*sqrt(2),'argument',-3*pi/4));
+        complexNumbersDividend = struct('complexNumbersDividend1',struct('realPart',5,'imaginaryPart',sqrt(2)));
+        complexNumbersDivisor = struct('complexNumbersDivisor1',struct('realPart',1,'imaginaryPart',-sqrt(2)));
         %% variables design or verify errors
+        complexNumberRealPartComplexNumber = struct('complexNumber1',struct('realPart',3+3i,'imaginaryPart',3));
+        complexNumberImaginaryPartComplexNumber = struct('complexNumber1',struct('realPart',3,'imaginaryPart',3+3i));
         complexNumberRealPartVector = struct('complexNumber1',struct('realPart',[3,3],'imaginaryPart',3));
         complexNumberImaginaryPartVector = struct('complexNumber1',struct('realPart',3,'imaginaryPart',[3, 3]));
         complexNumberRealPartEmpty = struct('complexNumber1',struct('realPart',[],'imaginaryPart',3));
@@ -66,6 +70,16 @@ classdef ComplexNumberClassTest < matlab.unittest.TestCase
             expectedSoltion = (complexNumber.realPart + complexNumber.imaginaryPart*1i)*(complexNumber.realPart + complexNumber.imaginaryPart*1i);
             verifyLessThan(testCase,max(abs([actualSolution.realValue - real(expectedSoltion), actualSolution.imaginaryValue - imag(expectedSoltion)])),testCase.calculationError, 'Overload operator .* (times) is wrong');
         end
+        function testRdivide(testCase, complexNumbersDividend,complexNumbersDivisor )
+            actualSolution = ComplexNumber(complexNumbersDividend.realPart,complexNumbersDividend.imaginaryPart) ./ ComplexNumber(complexNumbersDivisor.realPart,complexNumbersDivisor.imaginaryPart);
+            expectedSoltion = (complexNumbersDividend.realPart + complexNumbersDividend.imaginaryPart*1i)./(complexNumbersDivisor.realPart + complexNumbersDivisor.imaginaryPart*1i);
+            verifyLessThan(testCase,max(abs([actualSolution.realValue - real(expectedSoltion), actualSolution.imaginaryValue - imag(expectedSoltion)])),testCase.calculationError, 'Overload operator ./ (rdivide) is wrong');
+        end
+        function testLdivide(testCase, complexNumbersDividend,complexNumbersDivisor )
+            actualSolution = ComplexNumber(complexNumbersDividend.realPart,complexNumbersDividend.imaginaryPart) .\ ComplexNumber(complexNumbersDivisor.realPart,complexNumbersDivisor.imaginaryPart);
+            expectedSoltion = (complexNumbersDividend.realPart + complexNumbersDividend.imaginaryPart*1i).\(complexNumbersDivisor.realPart + complexNumbersDivisor.imaginaryPart*1i);
+            verifyLessThan(testCase,max(abs([actualSolution.realValue - real(expectedSoltion), actualSolution.imaginaryValue - imag(expectedSoltion)])),testCase.calculationError, 'Overload operator ./ (rdivide) is wrong');
+        end
         function testUminus(testCase, complexNumber)
             actualSolution = -ComplexNumber(complexNumber.realPart,complexNumber.imaginaryPart);
             expectedSoltion = -(complexNumber.realPart + complexNumber.imaginaryPart*1i);
@@ -79,6 +93,12 @@ classdef ComplexNumberClassTest < matlab.unittest.TestCase
     end
     %% test for errors
     methods (Test)
+        function testComplexNumberRealPartComplexNumber(testCase, complexNumberRealPartComplexNumber)
+            verifyError(testCase,@() ComplexNumber(complexNumberRealPartComplexNumber.realPart,complexNumberRealPartComplexNumber.imaginaryPart),?MException, 'Can''t have complex number if real number is vector')
+        end
+        function testComplexNumberImaginaryPartComplexNumber(testCase, complexNumberImaginaryPartComplexNumber)
+            verifyError(testCase,@() ComplexNumber(complexNumberImaginaryPartComplexNumber.realPart,complexNumberImaginaryPartComplexNumber.imaginaryPart),?MException, 'Can''t have complex number if real number is vector')
+        end
         function testComplexNumberRealPartVector(testCase, complexNumberRealPartVector)
             verifyError(testCase,@() ComplexNumber(complexNumberRealPartVector.realPart,complexNumberRealPartVector.imaginaryPart),?MException, 'Can''t have complex number if real number is vector')
         end
