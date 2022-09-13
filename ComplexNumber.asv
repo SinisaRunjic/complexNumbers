@@ -12,16 +12,16 @@ classdef ComplexNumber
             %% Constructor
             % if you pass 2 inputs or 3 inputs where coordinates is 'cartesian' then you write in class
             % realValue and imaginaryValue, if you pass 3 inputs and
-            % coordinates as 'polar' then it converts polar coordinates
-            % it to cartesian coordinates and writes in class
+            % coordinates as 'polar' then it converts it to cartesian
+            % coortinat system and writes in class
             % realValueOrModulus if it is modulus it needs to be larger
-            % or equal than 0
+            %  or equal than 0
             % imaginarimaginaryValueOrArgument if it is argument it needs
             % to be in rad
             %% test inputs
             if(nargin>0)
                 if(nargin == 3)
-                    if(strcmp(coordinates,'polar') || strcmp(coordinates,'Cartesian'))
+                    if(strcmp(coordinates,'polar') || strcmp(coordinates,'cartesian'))
                     else
                         error('coordinates input needs to be ''cartesian'' or ''polar''')
                     end
@@ -29,20 +29,20 @@ classdef ComplexNumber
                     
                 end
                 if(nargin == 2)
-                    coordinates = 'Cartesian';
+                    coordinates = 'cartesian';
                 end
                 if(nargin == 1)
                     error('Input one more input argument')
-                end
+                end 
                 assert(isnumeric(realValueOrModulus) && isnumeric(imaginaryValueOrArgument), 'one of your inputs aren''t numeric');
-                assert(~iscell(realValueOrModulus) || ~iscell(imaginaryValueOrArgument) ,'Input value can''t be a cell')
+                assert(~iscell(realValueOrModulus) || ~iscell(imaginaryValueOrArgument) ,'input value can''t be a cell')
                 [roX, columnX] = size(realValueOrModulus);
                 [roY, columnY] = size(imaginaryValueOrArgument);
-                assert(roY == 1 && columnX == 1 && roX == 1 && columnY == 1, 'Input value can''t be marix')
+                assert(roY == 1 && columnX == 1 && roX == 1 && columnY == 1, 'input value can''t be marix')
                 assert(imag(realValueOrModulus) == 0 && imag(imaginaryValueOrArgument) == 0, 'At least one of your input is complex number');
                 %% write in class
                 if(strcmp(coordinates,'polar'))
-                    assert(realValueOrModulus>=0, 'Input "realValueOrModulus" is smaller than 0 while using polar coordinates');
+                    assert(realValueOrModulus>=0, 'Input "realValueOrModulus" is smaller than 0');
                     cmpxNum = cmpxNum.convertPolarToCartesian(realValueOrModulus,imaginaryValueOrArgument);
                 else
                     cmpxNum.realValue = realValueOrModulus;
@@ -67,7 +67,6 @@ classdef ComplexNumber
             argument = cmpxNum.argument;
         end
         function cmpxNum = inverse(cmpxNum1)
-            %% cmpxNum = 1/cmpxNum1
             cmpxNum = ComplexNumber(1,0)./cmpxNum1;
         end
     end
@@ -90,23 +89,24 @@ classdef ComplexNumber
         %% cmpxNum1 .* cmpxNum2
         function cmpxNum = times(cmpxNum1,cmpxNum2)
             % cmpxNum1 .* cmpxNum2
-            %% via polar coordinates
-            cmpxNum = ComplexNumber(cmpxNum1.modulus.*cmpxNum2.modulus,cmpxNum1.argument + cmpxNum2.argument,'polar');
+            %% via Polar
+            cmpxNum = ComplexNumber(cmpxNum1.modul);
             %% via Cartesian
-            %cmpxNum.realValue = cmpxNum1.realValue*cmpxNum2.realValue - cmpxNum1.imaginaryValue*cmpxNum2.imaginaryValue;
-            %cmpxNum.imaginaryValue = cmpxNum1.realValue*cmpxNum2.imaginaryValue + cmpxNum1.realValue*cmpxNum2.imaginaryValue;
+            cmpxNum.realValue = cmpxNum1.realValue*cmpxNum2.realValue - cmpxNum1.imaginaryValue*cmpxNum2.imaginaryValue;
+            cmpxNum.imaginaryValue = cmpxNum1.realValue*cmpxNum2.imaginaryValue + cmpxNum1.realValue*cmpxNum2.imaginaryValue;
         end
         %% cmpxNum1 ./ cmpxNum2
         function cmpxNum = rdivide(cmpxNum1, cmpxNum2)
             % cmpxNum1 ./ cmpxNum2
             assert(cmpxNum2.modulus >0, 'Can''t devide if secound input have real and imaginary value 0 ')
-            %% via polar coordinates
+            %%polar divide
             cmpxNum = ComplexNumber(cmpxNum1.modulus./cmpxNum2.modulus,cmpxNum1.argument-cmpxNum2.argument,'polar');
             %% via Cartesian
-            %divisor = cmpxNum2.realValue * cmpxNum2.realValue + cmpxNum2.imaginaryValue * cmpxNum2.imaginaryValue;
-            %assert(divisor >0, 'Can''t devide if secound input have real and imaginary value 0 ')
-            %cmpxNum.realValue = (cmpxNum1.realValue*cmpxNum2.realValue + cmpxNum1.imaginaryValue * cmpxNum2.imaginaryValue)/divisor;
-            %cmpxNum.imaginaryValue = (cmpxNum1.imaginaryValue*cmpxNum2.realValue - cmpxNum1.realValue * cmpxNum2.imaginaryValue)/divisor;
+%             divisor = cmpxNum2.realValue * cmpxNum2.realValue + cmpxNum2.imaginaryValue * cmpxNum2.imaginaryValue;
+%             assert(divisor >0, 'Can''t devide if secound input have real and imaginary value 0 ')
+%             cmpxNum.realValue = (cmpxNum1.realValue*cmpxNum2.realValue + cmpxNum1.imaginaryValue * cmpxNum2.imaginaryValue)/divisor;
+%             cmpxNum.imaginaryValue = (cmpxNum1.imaginaryValue*cmpxNum2.realValue - cmpxNum1.realValue * cmpxNum2.imaginaryValue)/divisor;
+            
         end
         %% cmpxNum1 .\ cmpxNum2
         function cmpxNum = ldivide(cmpxNum1, cmpxNum2)
@@ -115,13 +115,15 @@ classdef ComplexNumber
         end
         %% 	power(a,b)
         function cmpxNum = power(cmpxNum, realNumber)
-            % power(a,b) b needs to be real number
+            % 	power(a,b) b needs to be real number
             assert(isnumeric(realNumber), 'Inputs aren''t numeric');
             assert(~iscell(realNumber) ,'Input value can''t be a cell')
             [roX, columnX] = size(realNumber);
             assert(roX == 1 && columnX == 1, 'Input value can''t be marix')
             assert(imag(realNumber) == 0, 'One of your input is complex number');
-            cmpxNum = cmpxNum.convertPolarToCartesian(cmpxNum.modulus .^ realNumber,cmpxNum.argument .* realNumber);
+            mod = cmpxNum.modulus .^ realNumber;
+            arg = cmpxNum.argument .* realNumber;
+            cmpxNum = cmpxNum.convertPolarToCartesian(mod,arg);
         end
         %% -cmpxNum
         function cmpxNum = uminus(cmpxNum)

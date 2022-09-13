@@ -16,6 +16,7 @@ classdef ComplexNumberClassTest < matlab.unittest.TestCase
         resultOfEq = struct('resultOfEq1', true,'resultofEq', false);
         resultOfNe = struct('resultOfNe1', false,'resultofEq', true);
         %% variables design or verify errors
+        complexNumberNegativeModulus = struct('complexNumberNegativeModulus1',struct('modulus',-3*sqrt(2),'argument',pi/4));
         nonRealPower = struct('nonRealPower1','2','nonRealPower2',{{3}},'nonRealPower3',[-2 3],'nonRealPower4',['2' 2]);
         complexNumberRealPartComplexNumber = struct('complexNumber1',struct('realPart',3+3i,'imaginaryPart',3));
         complexNumberImaginaryPartComplexNumber = struct('complexNumber1',struct('realPart',3,'imaginaryPart',3+3i));
@@ -49,6 +50,12 @@ classdef ComplexNumberClassTest < matlab.unittest.TestCase
             expectedRealSolution = complexNumber.realPart;
             expectedImaginaryPart = complexNumber.imaginaryPart;
             verifyLessThan(testCase,max(abs([actualSolution.realValue - expectedRealSolution, actualSolution.imaginaryValue - expectedImaginaryPart])),testCase.calculationError, 'Constrct is wrong');
+        end
+        function testConstructorForPolarCoordinates(testCase, complexNumber)
+            actualSolution = ComplexNumber(complexNumber.modulus, complexNumber.argument,'polar');
+            expectedRealSolution = complexNumber.realPart;
+            expectedImaginaryPart = complexNumber.imaginaryPart;
+            verifyLessThan(testCase,max(abs([actualSolution.realValue - expectedRealSolution, actualSolution.imaginaryValue - expectedImaginaryPart])),testCase.calculationError, 'Constrct for polar coordinates is wrong');
         end
         function testModulus(testCase, complexNumber)
             actualSolution = ComplexNumber(complexNumber.realPart, complexNumber.imaginaryPart).modulus;
@@ -109,7 +116,6 @@ classdef ComplexNumberClassTest < matlab.unittest.TestCase
             expectedSoltion = resultOfEq;
             verifyEqual(testCase,actualSolution, expectedSoltion,'Overload operator == (eq) is wrong');
         end
-        
         function testNe(testCase, complexNumberForLogical1, complexNumberForLogical2, resultOfNe)
             actualSolution = ComplexNumber(complexNumberForLogical1.realPart,complexNumberForLogical1.imaginaryPart) ~= ...
                 ComplexNumber(complexNumberForLogical2.realPart,complexNumberForLogical2.imaginaryPart) ;
@@ -126,6 +132,9 @@ classdef ComplexNumberClassTest < matlab.unittest.TestCase
     end
     %% test for errors
     methods (Test)
+        function testComplexNumberNegativeModulus(testCase, complexNumberNegativeModulus)
+            verifyError(testCase,@() ComplexNumber(complexNumberNegativeModulus.modulus,complexNumberNegativeModulus.argument,'polar'),?MException, 'Can''t have complex number if modulus is negative')
+        end
         function testComplexNumberRealPartComplexNumber(testCase, complexNumberRealPartComplexNumber)
             verifyError(testCase,@() ComplexNumber(complexNumberRealPartComplexNumber.realPart,complexNumberRealPartComplexNumber.imaginaryPart),?MException, 'Can''t have complex number if real number is vector')
         end
