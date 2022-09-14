@@ -23,10 +23,8 @@ classdef ComplexNumber
                 if(nargin == 3)
                     if(strcmp(coordinates,'polar') || strcmp(coordinates,'Cartesian'))
                     else
-                        error('coordinates input needs to be ''cartesian'' or ''polar''')
+                        error('coordinates input needs to be ''Cartesian'' or ''polar''')
                     end
-                else
-                    
                 end
                 if(nargin == 2)
                     coordinates = 'Cartesian';
@@ -70,22 +68,39 @@ classdef ComplexNumber
             %% cmpxNum = 1/cmpxNum1
             cmpxNum = ComplexNumber(1,0)./cmpxNum1;
         end
+        function plotComplexNumber(cmpxNum)
+            [row, column] = size(cmpxNum);
+            %% Cartesian coordinate system
+            hold on
+            figure(1)
+            for i=1:row
+                for j = 1:column
+                    plot(cmpxNum(i,j).realValue,cmpxNum(i,j).imaginaryValue,'+','Color',[0.2 0.6 0.8],'DisplayName','Cartesian coordinates')
+                    %% Polar coordinates
+                end
+            end
+        end
     end
     %% function overload operators
     methods
         %% cmpxNum1 + cmpxNum2
         function cmpxNum = plus(cmpxNum1,cmpxNum2)
             % cmpxNum1 + cmpxNum2
-            cmpxNum = ComplexNumber;
-            cmpxNum.realValue = cmpxNum1.realValue + cmpxNum2.realValue;
-            cmpxNum.imaginaryValue = cmpxNum1.imaginaryValue + cmpxNum2.imaginaryValue;
+            [rowCmpxNum1, columnCmpxNum1] = size(cmpxNum1);
+            [rowCmpxNum2, columnCmpxNum2] = size(cmpxNum2);
+            assert(rowCmpxNum1 == rowCmpxNum2 && columnCmpxNum1 == columnCmpxNum2, 'Size of matrix aren''t same')
+            cmpxNum = zerosComplexNumber(rowCmpxNum1, columnCmpxNum1);
+            for i = 1 :rowCmpxNum1
+                for j = 1 : columnCmpxNum1
+                    cmpxNum(i,j).realValue = cmpxNum1(i,j).realValue + cmpxNum2(i,j).realValue;
+                    cmpxNum(i,j).imaginaryValue = cmpxNum1(i,j).imaginaryValue + cmpxNum2(i,j).imaginaryValue;
+                end
+            end
         end
         %% cmpxNum1 - cmpxNum2
         function cmpxNum = minus(cmpxNum1,cmpxNum2)
             % cmpxNum1 - cmpxNum2
-            cmpxNum = ComplexNumber;
-            cmpxNum.realValue = cmpxNum1.realValue - cmpxNum2.realValue;
-            cmpxNum.imaginaryValue = cmpxNum1.imaginaryValue - cmpxNum2.imaginaryValue;
+            cmpxNum = cmpxNum1 + (-cmpxNum2);
         end
         %% cmpxNum1 .* cmpxNum2
         function cmpxNum = times(cmpxNum1,cmpxNum2)
@@ -113,26 +128,41 @@ classdef ComplexNumber
             % cmpxNum1 .\ cmpxNum2
             cmpxNum = rdivide(cmpxNum2,cmpxNum1); %%cmpxNum = cmpxNum2./cmpxNum1;
         end
-        %% 	power(a,b)
+        %% power(a,b)
         function cmpxNum = power(cmpxNum, realNumber)
-            % power(a,b) b needs to be real number
+            % a.^b b needs to be real number
             assert(isnumeric(realNumber), 'Inputs aren''t numeric');
             assert(~iscell(realNumber) ,'Input value can''t be a cell')
             [roX, columnX] = size(realNumber);
             assert(roX == 1 && columnX == 1, 'Input value can''t be marix')
             assert(imag(realNumber) == 0, 'One of your input is complex number');
-            cmpxNum = cmpxNum.convertPolarToCartesian(cmpxNum.modulus .^ realNumber,cmpxNum.argument .* realNumber);
+            [rowCmpxNum, columnCmpxNum] = size(cmpxNum);
+            for i = 1:rowCmpxNum
+                for j = 1:columnCmpxNum
+                    cmpxNum(i,j) = cmpxNum(i,j).convertPolarToCartesian(cmpxNum(i,j).modulus .^ realNumber,cmpxNum(i,j).argument .* realNumber);
+                end
+            end
         end
         %% -cmpxNum
         function cmpxNum = uminus(cmpxNum)
             % -cmpxNum
-            cmpxNum.realValue = -cmpxNum.realValue;
-            cmpxNum.imaginaryValue = -cmpxNum.imaginaryValue;
+            [row, column] = size(cmpxNum);
+            for i=1:row
+                for j=1:column
+                    cmpxNum(i,j).realValue = -cmpxNum(i,j).realValue;
+                    cmpxNum(i,j).imaginaryValue = -cmpxNum(i,j).imaginaryValue;
+                end
+            end
         end
         %% cmpxNum'
         function cmpxNum = ctranspose(cmpxNum)
             % cmpxNum'
-            cmpxNum.imaginaryValue = -cmpxNum.imaginaryValue;
+            [row, column] = size(cmpxNum);
+            for i = 1:row
+                for j=1:column
+                    cmpxNum(i,j).imaginaryValue = -cmpxNum(i,j).imaginaryValue;
+                end
+            end
         end
         %% cmpxNum1 == cmpxNum2
         function result = eq(cmpxNum1, cmpxNum2)
@@ -158,4 +188,3 @@ classdef ComplexNumber
         end
     end
 end
-
