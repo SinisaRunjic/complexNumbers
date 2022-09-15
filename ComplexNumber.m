@@ -49,7 +49,7 @@ classdef ComplexNumber
             end
         end
         function modulus = get.modulus(cmpxNum)
-            modulus = sqrt(cmpxNum.realValue*cmpxNum.realValue + cmpxNum.imaginaryValue*cmpxNum.imaginaryValue);
+            modulus = sqrt(cmpxNum.realValue.*cmpxNum.realValue + cmpxNum.imaginaryValue.*cmpxNum.imaginaryValue);
         end
         function cmpxNum = set.modulus(cmpxNum,~)
             error('You cannot set modulus property');
@@ -65,20 +65,27 @@ classdef ComplexNumber
             argument = cmpxNum.argument;
         end
         function cmpxNum = inverse(cmpxNum1)
-            %% cmpxNum = 1/cmpxNum1
-            cmpxNum = ComplexNumber(1,0)./cmpxNum1;
+            %% cmpxNum = adjungateMatrix(cmpxNum1)/determinant(cmpxNum1)
+            determinant = matrixDet(cmpxNum1);
+                  assert(abs(determinant.modulus) > 10^(-7),'Can''t find inverse matrix if determinant is 0')
+            %adjungateMatrix(cmpxNum1)
+            cmpxNum = adjungateMatrix(cmpxNum1).*determinant.power(-1);
+            %  cmpxNum = ComplexNumber(1,0)./cmpxNum1;
         end
         function plotComplexNumber(cmpxNum)
             [row, column] = size(cmpxNum);
             %% Cartesian coordinate system
             hold on
             figure(1)
+            xlim([-5 5])
+            ylim([-5 5])
+            title('Complex numbers')
             for i=1:row
                 for j = 1:column
-                    plot(cmpxNum(i,j).realValue,cmpxNum(i,j).imaginaryValue,'+','Color',[0.2 0.6 0.8],'DisplayName','Cartesian coordinates')
-                    %% Polar coordinates
+                    plot(cmpxNum(i,j).realValue,cmpxNum(i,j).imaginaryValue,'+','Color',[0.2 0.6 0.8])
                 end
             end
+            hold off
         end
     end
     %% function overload operators
@@ -105,11 +112,58 @@ classdef ComplexNumber
         %% cmpxNum1 .* cmpxNum2
         function cmpxNum = times(cmpxNum1,cmpxNum2)
             % cmpxNum1 .* cmpxNum2
+            [rowCmpxNum1, columnCmpxNum1]= size(cmpxNum1);
+            [rowCmpxNum2, columnCmpxNum2]= size(cmpxNum2);
+            %% if one of them is scalar
+            if((rowCmpxNum1 == 1 && columnCmpxNum1 == 1) || (rowCmpxNum2 == 1 && columnCmpxNum2 == 1))
+                if(rowCmpxNum1 == 1 && columnCmpxNum1 == 1 && (rowCmpxNum2 ~= 1 || columnCmpxNum2 ~= 1))
+                    cmpxNum = multiplyScalarMatrix(cmpxNum1,cmpxNum2,rowCmpxNum2,columnCmpxNum2);
+                    return
+                end
+                if(rowCmpxNum2 == 1 && columnCmpxNum2 == 1 && rowCmpxNum1 ~= 1 || columnCmpxNum1 ~= 1)
+                    cmpxNum = multiplyScalarMatrix(cmpxNum2,cmpxNum1,rowCmpxNum1,columnCmpxNum1);
+                    return
+                end
+            end
             %% via polar coordinates
-            cmpxNum = ComplexNumber(cmpxNum1.modulus.*cmpxNum2.modulus,cmpxNum1.argument + cmpxNum2.argument,'polar');
-            %% via Cartesian
-            %cmpxNum.realValue = cmpxNum1.realValue*cmpxNum2.realValue - cmpxNum1.imaginaryValue*cmpxNum2.imaginaryValue;
-            %cmpxNum.imaginaryValue = cmpxNum1.realValue*cmpxNum2.imaginaryValue + cmpxNum1.realValue*cmpxNum2.imaginaryValue;
+            if(rowCmpxNum1 == rowCmpxNum2 && columnCmpxNum1 == columnCmpxNum2)
+                cmpxNum = zerosComplexNumber(rowCmpxNum1,columnCmpxNum1);
+                for i=1:rowCmpxNum1
+                    for j=1:columnCmpxNum1
+                        cmpxNum(i,j) = ComplexNumber(cmpxNum1(i,j).modulus.*cmpxNum2(i,j).modulus,cmpxNum1(i,j).argument + cmpxNum2(i,j).argument,'polar');
+                    end
+                end
+                return
+            end
+            error('There is dimension problem with inputs');
+        end
+        %% cmpxNum1 * cmpxNum2
+        function cmpxNum = mtimes(cmpxNum1,cmpxNum2)
+            [rowCmpxNum1, columnCmpxNum1]= size(cmpxNum1);
+            [rowCmpxNum2, columnCmpxNum2]= size(cmpxNum2);
+            if((rowCmpxNum1 == 1 && columnCmpxNum1 == 1) || (rowCmpxNum2 == 1 && columnCmpxNum2 == 1))
+                if(rowCmpxNum1 == 1 && columnCmpxNum1 == 1 && (rowCmpxNum2 ~= 1 && columnCmpxNum2 ~= 1))
+                    cmpxNum = multiplyScalarMatrix(cmpxNum1,cmpxNum2,rowCmpxNum2,columnCmpxNum2);
+                    return
+                end
+                if(rowCmpxNum2 == 1 && columnCmpxNum2 == 1 && rowCmpxNum1 ~= 1 && columnCmpxNum1 ~= 1)
+                    cmpxNum = multiplyScalarMatrix(cmpxNum2,cmpxNum1,rowCmpxNum1,columnCmpxNum1);
+                    return
+                end
+            end
+            if(columnCmpxNum1 == rowCmpxNum2)
+                cmpxNum = zerosComplexNumber(rowCmpxNum1,columnCmpxNum2);
+                for i=1:rowCmpxNum1
+                    for k = 1:columnCmpxNum2
+                        for j = 1: columnCmpxNum1
+                            cmpxNum(i,k) = cmpxNum(i,k) +  cmpxNum1(i,j) .* cmpxNum2(j,k);
+                        end
+                    end
+                end
+                return
+            end
+            error('There is dimension problem with inputs');
+            
         end
         %% cmpxNum1 ./ cmpxNum2
         function cmpxNum = rdivide(cmpxNum1, cmpxNum2)
@@ -155,12 +209,21 @@ classdef ComplexNumber
             end
         end
         %% cmpxNum'
-        function cmpxNum = ctranspose(cmpxNum)
+        function cmpxNum = ctranspose(cmpxNum1)
             % cmpxNum'
-            [row, column] = size(cmpxNum);
+            [row, column] = size(cmpxNum1);
             for i = 1:row
                 for j=1:column
-                    cmpxNum(i,j).imaginaryValue = -cmpxNum(i,j).imaginaryValue;
+                    cmpxNum(j,i) = ComplexNumber(cmpxNum1(i,j).modulus, -cmpxNum1(i,j).argument, 'polar') ;
+                end
+            end
+        end
+        function cmpxNum = transpose(cmpxNum1)
+            % cmpxNum'
+            [row, column] = size(cmpxNum1);
+            for i = 1:row
+                for j=1:column
+                    cmpxNum(j,i) = cmpxNum1(i,j);
                 end
             end
         end
