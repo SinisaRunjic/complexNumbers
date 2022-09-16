@@ -10,7 +10,7 @@ classdef ComplexNumber
     methods
         function cmpxNum = ComplexNumber(realValueOrModulus,imaginaryValueOrArgument,coordinates)
             %% Constructor
-            % if you pass 2 inputs or 3 inputs where coordinates is 'cartesian' then you write in class
+            % if you pass 2 inputs or 3 inputs where coordinates is 'Cartesian' then you write in class
             % realValue and imaginaryValue, if you pass 3 inputs and
             % coordinates as 'polar' then it converts polar coordinates
             % it to cartesian coordinates and writes in class
@@ -20,9 +20,11 @@ classdef ComplexNumber
             % to be in rad
             %% test inputs
             if(nargin>0)
+                if(nargin >= 4)
+                   error('Too many input arguments') 
+                end
                 if(nargin == 3)
-                    if(strcmp(coordinates,'polar') || strcmp(coordinates,'Cartesian'))
-                    else
+                    if(~strcmp(coordinates,'polar') && ~strcmp(coordinates,'Cartesian'))
                         error('coordinates input needs to be ''Cartesian'' or ''polar''')
                     end
                 end
@@ -32,12 +34,8 @@ classdef ComplexNumber
                 if(nargin == 1)
                     error('Input one more input argument')
                 end
-                assert(isnumeric(realValueOrModulus) && isnumeric(imaginaryValueOrArgument), 'one of your inputs aren''t numeric');
-                assert(~iscell(realValueOrModulus) || ~iscell(imaginaryValueOrArgument) ,'Input value can''t be a cell')
-                [roX, columnX] = size(realValueOrModulus);
-                [roY, columnY] = size(imaginaryValueOrArgument);
-                assert(roY == 1 && columnX == 1 && roX == 1 && columnY == 1, 'Input value can''t be marix')
-                assert(imag(realValueOrModulus) == 0 && imag(imaginaryValueOrArgument) == 0, 'At least one of your input is complex number');
+                realScalarNumberTest(realValueOrModulus)
+                realScalarNumberTest(imaginaryValueOrArgument)
                 %% write in class
                 if(strcmp(coordinates,'polar'))
                     assert(realValueOrModulus>=0, 'Input "realValueOrModulus" is smaller than 0 while using polar coordinates');
@@ -67,18 +65,14 @@ classdef ComplexNumber
         function cmpxNum = inverse(cmpxNum1)
             %% cmpxNum = adjungateMatrix(cmpxNum1)/determinant(cmpxNum1)
             determinant = matrixDet(cmpxNum1);
-                  assert(abs(determinant.modulus) > 10^(-7),'Can''t find inverse matrix if determinant is 0')
-            %adjungateMatrix(cmpxNum1)
+            assert(abs(determinant.modulus) > 10^(-7),'Can''t find inverse matrix if determinant is 0')
             cmpxNum = adjungateMatrix(cmpxNum1).*determinant.power(-1);
-            %  cmpxNum = ComplexNumber(1,0)./cmpxNum1;
         end
         function plotComplexNumber(cmpxNum)
             [row, column] = size(cmpxNum);
             %% Cartesian coordinate system
             hold on
             figure(1)
-            xlim([-5 5])
-            ylim([-5 5])
             title('Complex numbers')
             for i=1:row
                 for j = 1:column
@@ -92,13 +86,10 @@ classdef ComplexNumber
     methods
         %% cmpxNum1 + cmpxNum2
         function cmpxNum = plus(cmpxNum1,cmpxNum2)
-            % cmpxNum1 + cmpxNum2
-            [rowCmpxNum1, columnCmpxNum1] = size(cmpxNum1);
-            [rowCmpxNum2, columnCmpxNum2] = size(cmpxNum2);
-            assert(rowCmpxNum1 == rowCmpxNum2 && columnCmpxNum1 == columnCmpxNum2, 'Size of matrix aren''t same')
-            cmpxNum = zerosComplexNumber(rowCmpxNum1, columnCmpxNum1);
-            for i = 1 :rowCmpxNum1
-                for j = 1 : columnCmpxNum1
+            [row, column] = matrixesSizeTest(cmpxNum1,cmpxNum2);
+            cmpxNum = zerosComplexNumber(row, column);
+            for i = 1 :row
+                for j = 1 : column
                     cmpxNum(i,j).realValue = cmpxNum1(i,j).realValue + cmpxNum2(i,j).realValue;
                     cmpxNum(i,j).imaginaryValue = cmpxNum1(i,j).imaginaryValue + cmpxNum2(i,j).imaginaryValue;
                 end
@@ -139,6 +130,7 @@ classdef ComplexNumber
         end
         %% cmpxNum1 * cmpxNum2
         function cmpxNum = mtimes(cmpxNum1,cmpxNum2)
+            % cmpxNum1 * cmpxNum2
             [rowCmpxNum1, columnCmpxNum1]= size(cmpxNum1);
             [rowCmpxNum2, columnCmpxNum2]= size(cmpxNum2);
             if((rowCmpxNum1 == 1 && columnCmpxNum1 == 1) || (rowCmpxNum2 == 1 && columnCmpxNum2 == 1))
@@ -163,38 +155,49 @@ classdef ComplexNumber
                 return
             end
             error('There is dimension problem with inputs');
-            
         end
-        %% cmpxNum1 ./ cmpxNum2
+        %% cmpxNum1 /complexNum == cmpxNum * (cmpxNum2)^(-1)
+        function cmpxNum = mrdivide(cmpxNum1, cmpxNum2)
+            % cmpxNum1 /complexNum == cmpxNum * (cmpxNum2)^(-1)
+            cmpxNum = cmpxNum1 * cmpxNum2.inverse();
+        end
+        %% cmpxNum1 ./ cmpxNum2 == cmpxNum1 .* cmpxNum2^(-1)
         function cmpxNum = rdivide(cmpxNum1, cmpxNum2)
-            % cmpxNum1 ./ cmpxNum2
-            assert(cmpxNum2.modulus >0, 'Can''t devide if secound input have real and imaginary value 0 ')
-            %% via polar coordinates
-            cmpxNum = ComplexNumber(cmpxNum1.modulus./cmpxNum2.modulus,cmpxNum1.argument-cmpxNum2.argument,'polar');
-            %% via Cartesian
-            %divisor = cmpxNum2.realValue * cmpxNum2.realValue + cmpxNum2.imaginaryValue * cmpxNum2.imaginaryValue;
-            %assert(divisor >0, 'Can''t devide if secound input have real and imaginary value 0 ')
-            %cmpxNum.realValue = (cmpxNum1.realValue*cmpxNum2.realValue + cmpxNum1.imaginaryValue * cmpxNum2.imaginaryValue)/divisor;
-            %cmpxNum.imaginaryValue = (cmpxNum1.imaginaryValue*cmpxNum2.realValue - cmpxNum1.realValue * cmpxNum2.imaginaryValue)/divisor;
+            % cmpxNum1 ./ cmpxNum2 == cmpxNum1 .* cmpxNum2^(-1)
+            cmpxNum = cmpxNum1 .* cmpxNum2.inverse();
         end
-        %% cmpxNum1 .\ cmpxNum2
+        %% cmpxNum1 .\ cmpxNum2 == cmpxNum1^(-1) .* cmpxNum2
         function cmpxNum = ldivide(cmpxNum1, cmpxNum2)
-            % cmpxNum1 .\ cmpxNum2
-            cmpxNum = rdivide(cmpxNum2,cmpxNum1); %%cmpxNum = cmpxNum2./cmpxNum1;
+            % cmpxNum1 .\ cmpxNum2 == cmpxNum1^(-1) .* cmpxNum2
+            cmpxNum = cmpxNum1.inverse() .* cmpxNum2;
         end
         %% power(a,b)
         function cmpxNum = power(cmpxNum, realNumber)
             % a.^b b needs to be real number
-            assert(isnumeric(realNumber), 'Inputs aren''t numeric');
-            assert(~iscell(realNumber) ,'Input value can''t be a cell')
-            [roX, columnX] = size(realNumber);
-            assert(roX == 1 && columnX == 1, 'Input value can''t be marix')
-            assert(imag(realNumber) == 0, 'One of your input is complex number');
+            realScalarNumberTest(realNumber);
             [rowCmpxNum, columnCmpxNum] = size(cmpxNum);
             for i = 1:rowCmpxNum
                 for j = 1:columnCmpxNum
                     cmpxNum(i,j) = cmpxNum(i,j).convertPolarToCartesian(cmpxNum(i,j).modulus .^ realNumber,cmpxNum(i,j).argument .* realNumber);
                 end
+            end
+        end
+        %% mpower(A,b)
+        function cmpxNum = mpower(cmpxNum, realNumber)
+            % A^b b needs to be real number
+            realScalarNumberTest(realNumber);
+            if(realNumber>0)
+                cmpxNum = matrixPowerOnRealNumber(cmpxNum, realNumber);
+                return
+            end
+            if(realNumber<0)
+                cmpxNum = matrixPowerOnRealNumber(cmpxNum.inverse(), abs(realNumber));
+                return
+            end
+            if(realNumber == 0)
+                [rowCmpxNum, columnCmpxNum] = size(cmpxNum);
+                cmpxNum = onesComplexNumber(rowCmpxNum,columnCmpxNum);
+                return
             end
         end
         %% -cmpxNum
@@ -230,10 +233,16 @@ classdef ComplexNumber
         %% cmpxNum1 == cmpxNum2
         function result = eq(cmpxNum1, cmpxNum2)
             % cmpxNum1 == cmpxNum2
+            [row, column] = matrixesSizeTest(cmpxNum1,cmpxNum2);
             result = false;
-            if(cmpxNum1.realValue == cmpxNum2.realValue && cmpxNum1.imaginaryValue == cmpxNum2.imaginaryValue)
-                result = true;
+            for i = 1:row
+                for j = 1:column
+                    if(cmpxNum1(i,j).realValue ~= cmpxNum2(i,j).realValue || cmpxNum1(i,j).imaginaryValue ~= cmpxNum2(i,j).imaginaryValue)
+                        return
+                    end
+                end
             end
+            result = true;
         end
         %% cmpxNum1 ~= cmpxNum2
         function result = ne(cmpxNum1, cmpxNum2)
@@ -245,8 +254,6 @@ classdef ComplexNumber
         %% function that transfers polar koordinates to Cartesian
         function cmpxNum = convertPolarToCartesian(~,modulus,argument)
             %function that transfers polar koordinates to Cartesian
-            % realValue = modulus * cos(argument)
-            % imaginaryValue = modulus * sin(argument)
             cmpxNum = ComplexNumber(modulus * cos(argument),modulus * sin(argument));
         end
     end
